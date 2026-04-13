@@ -18,6 +18,10 @@ When users filter by provider, department, or date, the dashboard automatically 
 - Areas of concern
 - Actionable recommendations
 
+**No more manual interpretation.**
+
+---
+
 ## Key Features
 
 ### 📊 30+ Key Performance Indicators
@@ -43,4 +47,53 @@ When users filter by provider, department, or date, the dashboard automatically 
 - **Time Intelligence:** YTD, MTD calculations
 - **Dynamic Text:** Auto-generated insights using CONCATENATEX, TOPN, SELECTEDVALUE
 
+---
+
 ## Data Model
+┌─────────────┐ ┌──────────────┐
+│ Calendar │ │ Patients │
+└─────────────┘ └──────────────┘
+│ │
+▼ ▼
+┌─────────────┐ ┌──────────────┐
+│ Visits │────▶│ Providers │
+│ (Fact) │ └──────────────┘
+└─────────────┘
+│
+▼
+┌─────────────┐ ┌──────────────┐ ┌──────────────┐
+│ Departments │ │ Diagnoses │ │ Procedures │
+└─────────────┘ └──────────────┘ └──────────────┘
+--
+
+## Screenshots
+
+### Page 1: Financial Overview
+![Financial Overview](<img width="1268" height="730" alt="page1_financial_overview" src="https://github.com/user-attachments/assets/7ab90053-c16c-462b-b430-a1ad2411f4b2" />
+)
+
+### Page 2: Provider Insights
+![Provider Insights](<img width="1920" height="1080" alt="page2_provider_insights" src="https://github.com/user-attachments/assets/6175d1bf-76ae-49cf-8e6f-28c984e51af3" />)
+
+### Page 3: Dynamic Insights
+![Dynamic Insights](<img width="1920" height="1080" alt="page3_dynamic_insights" src="https://github.com/user-attachments/assets/4056ab5a-3165-41f2-bb2b-1c53cb1a3e6c" />)
+
+---
+
+## DAX Highlights
+
+```dax
+// Provider Revenue Gap
+Provider Revenue Gap Ratio = 
+VAR TopRevenue = MAXX(ALLSELECTED(providers[Provider Name]), [Total Revenue])
+VAR BottomRevenue = MINX(ALLSELECTED(providers[Provider Name]), [Total Revenue])
+RETURN DIVIDE(TopRevenue, BottomRevenue)
+
+// Patient Retention Rate
+Patient Retention Rate = DIVIDE([Returning Patients], [Total Patients])
+
+// Provider Workload Balance
+Provider Workload Balance = 
+AVERAGEX(VALUES(providers[Provider Name]),
+    DIVIDE([Total Visits], MAXX(ALLSELECTED(providers[Provider Name]), [Total Visits]))
+)
