@@ -1,0 +1,2 @@
+YTD Revenue = TOTALYTD([Total Revenue], 'Calendar'[Date])
+Revenue by Service Type = CALCULATE([Total Revenue], VALUES(visits[Service Type]))

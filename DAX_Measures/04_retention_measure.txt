@@ -1,0 +1,2 @@
+Returning Patients = COUNTROWS(FILTER(VALUES(visits[Patient ID]), [Total Visits] >= 2))
+Patient Retention Rate = DIVIDE([Returning Patients], [Total Patients])

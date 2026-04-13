@@ -1,0 +1,108 @@
+Healthcare Executive Summary = 
+VAR TotalRev = [Total Revenue]
+VAR TotalVis = [Total Visits]
+VAR AvgSat = [Avg Satisfaction]
+VAR RevenueGrowth = [YTD Revenue] - [Total Revenue]
+VAR GrowthPercent = DIVIDE(RevenueGrowth, [Total Revenue])
+RETURN
+"📊 EXECUTIVE SUMMARY" & UNICHAR(10) & UNICHAR(10) &
+"• Total Revenue: $" & FORMAT(TotalRev, "#,##0") &
+" (" & IF(GrowthPercent > 0, "▲", "▼") & FORMAT(ABS(GrowthPercent), "0%") & " vs last period)" & UNICHAR(10) &
+"• Total Visits: " & FORMAT(TotalVis, "#,##0") & UNICHAR(10) &
+"• Average Satisfaction: " & FORMAT(AvgSat, "0.0") & "/10" &
+IF(AvgSat >= 8, " ⭐ Excellent", 
+   IF(AvgSat >= 6, " 👍 Good", 
+      " ⚠️ Needs Improvement"))
+
+Financial Highlights = 
+VAR AvgCost = [Avg Cost per Visit]
+VAR InpatientRev = CALCULATE([Total Revenue], visits[Service Type] = "Inpatient")
+VAR OutpatientRev = CALCULATE([Total Revenue], visits[Service Type] = "Outpatient")
+VAR PaidPercent = [Paid Visits %]
+VAR UnpaidRevenue = CALCULATE([Total Revenue], visits[Payment Status] = "Unpaid")
+RETURN
+"💰 FINANCIAL HIGHLIGHTS" & UNICHAR(10) & UNICHAR(10) &
+"• Average Cost per Visit: $" & FORMAT(AvgCost, "#,##0") & UNICHAR(10) &
+"• Revenue from Inpatient: $" & FORMAT(InpatientRev, "#,##0") & UNICHAR(10) &
+"• Revenue from Outpatient: $" & FORMAT(OutpatientRev, "#,##0") & UNICHAR(10) &
+"• Collection Rate: " & FORMAT(PaidPercent, "0%") &
+IF(PaidPercent >= 0.8, " ✅ Healthy", 
+   IF(PaidPercent >= 0.6, " ⚠️ Monitor", 
+      " 🔴 Action Needed")) & UNICHAR(10) &
+"• Unpaid Revenue: $" & FORMAT(UnpaidRevenue, "#,##0") & " at risk"
+
+Provider Performance Insight = 
+VAR TopProvider = TOPN(1, VALUES(providers[Provider Name]), [Total Revenue])
+VAR TopRevenue = CALCULATE([Total Revenue], TopProvider)
+VAR TopSatisfaction = TOPN(1, VALUES(providers[Provider Name]), [Avg Satisfaction by Provider], DESC)
+VAR BottomProvider = TOPN(1, VALUES(providers[Provider Name]), [Total Revenue], ASC)
+VAR BottomRevenue = CALCULATE([Total Revenue], BottomProvider)
+VAR AvgProviderRevenue = [Avg Revenue per Provider]
+VAR RevenueGap = [Provider Revenue Gap Ratio]
+RETURN
+"👨‍⚕️ PROVIDER PERFORMANCE" & UNICHAR(10) & UNICHAR(10) &
+"• Top Revenue Provider: " & TopProvider & 
+" ($" & FORMAT(TopRevenue, "#,##0") & ")" & UNICHAR(10) &
+"• Highest Rated Provider: " & TopSatisfaction & 
+" (" & FORMAT(CALCULATE([Avg Satisfaction by Provider], TopSatisfaction), "0.0") & "/10)" & UNICHAR(10) &
+"• Bottom Provider: " & BottomProvider & 
+" ($" & FORMAT(BottomRevenue, "#,##0") & ")" & UNICHAR(10) &
+"• Revenue Gap: Top earns " & FORMAT(RevenueGap, "0.0") & "x more than bottom" &
+IF(RevenueGap > 3, " ⚠️ Significant imbalance", " ✅ Balanced")
+
+Areas of Concern = 
+VAR LowSatisfactionCount = CALCULATE([Total Visits], visits[Patient Satisfaction Score] < 6)
+VAR LowSatisfactionPercent = DIVIDE(LowSatisfactionCount, [Total Visits])
+VAR UnpaidPercent = [Unpaid Visits %]
+VAR LowUtilizationProviders = COUNTROWS(
+    FILTER(VALUES(providers[Provider Name]),
+        [Total Visits] < [Avg Visits per Provider] * 0.7
+    )
+)
+VAR EmergencyPercent = DIVIDE(CALCULATE([Total Visits], visits[Emergency Visit] = "Yes"), [Total Visits])
+VAR LowRetention = [Patient Retention Rate] < 0.4
+RETURN
+"⚠️ AREAS OF CONCERN" & UNICHAR(10) & UNICHAR(10) &
+IF(LowSatisfactionPercent > 0.1,
+    "• " & FORMAT(LowSatisfactionPercent, "0%") & " of visits had low satisfaction (<6/10) — review patient feedback" & UNICHAR(10),
+    "• Satisfaction scores are healthy ✓" & UNICHAR(10)
+) &
+IF(UnpaidPercent > 0.1,
+    "• " & FORMAT(UnpaidPercent, "0%") & " of visits are unpaid — review billing process" & UNICHAR(10),
+    "• Payment collection rate is strong ✓" & UNICHAR(10)
+) &
+IF(LowUtilizationProviders > 0,
+    "• " & LowUtilizationProviders & " provider(s) are significantly below average volume" & UNICHAR(10),
+    "• All providers have healthy volume ✓" & UNICHAR(10)
+) &
+IF(EmergencyPercent > 0.3,
+    "• High emergency visit volume (" & FORMAT(EmergencyPercent, "0%") & "%) — consider expanding urgent care",
+    "• Emergency visit volume is within normal range ✓"
+)
+
+Recommendations = 
+VAR TopDiagnosis = TOPN(1, VALUES(diagnoses[Diagnosis]), [Total Visits])
+VAR TopProcedure = TOPN(1, VALUES(procedures[Procedure]), [Total Revenue])
+VAR LowSatisfactionDept = TOPN(1, VALUES(departments[Department]), [Avg Satisfaction], ASC)
+VAR UnpaidRevenue = CALCULATE([Total Revenue], visits[Payment Status] = "Unpaid")
+VAR RecoveryPotential = UnpaidRevenue * 0.5
+VAR LowUtilizationProviders = COUNTROWS(
+    FILTER(VALUES(providers[Provider Name]),
+        [Total Visits] < [Avg Visits per Provider] * 0.7
+    )
+)
+RETURN
+"🎯 RECOMMENDATIONS" & UNICHAR(10) & UNICHAR(10) &
+"• Most common diagnosis: " & TopDiagnosis & 
+" — ensure adequate resources and training" & UNICHAR(10) &
+"• Highest revenue procedure: " & TopProcedure & 
+" — consider marketing and expanding capacity" & UNICHAR(10) &
+"• Review patient experience in: " & LowSatisfactionDept & 
+" department — schedule patient feedback session" & UNICHAR(10) &
+"• Unpaid visits represent $" & FORMAT(UnpaidRevenue, "#,##0") & 
+" in at-risk revenue. Recovering 50% would add $" & FORMAT(RecoveryPotential, "#,##0") & UNICHAR(10) &
+IF(LowUtilizationProviders > 0,
+    "• " & LowUtilizationProviders & " provider(s) need volume support — consider marketing or referral program",
+    "• Provider workload is well balanced — maintain current strategy"
+)
+Last Updated = "📅 Insights auto-refresh:" & UNICHAR(10) & FORMAT(NOW(), "MMM DD, YYYY HH:MM AM/PM")

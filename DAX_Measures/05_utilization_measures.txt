@@ -1,0 +1,1 @@
+Provider Utilization % = DIVIDE([Total Visits], MAXX(ALLSELECTED(providers[Provider Name]), [Total Visits])) * 100

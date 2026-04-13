@@ -1,0 +1,2 @@
+Avg Revenue per Provider = DIVIDE([Total Revenue], [Total Providers])
+Provider Revenue Gap Ratio = DIVIDE(MAXX(...), MINX(...))

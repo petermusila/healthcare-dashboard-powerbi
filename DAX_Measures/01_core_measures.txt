@@ -1,0 +1,4 @@
+Total Revenue = SUMX(visits, visits[Treatment Cost] + visits[Medication Cost])
+Total Visits = COUNTROWS(visits)
+Total Patients = DISTINCTCOUNT(visits[Patient ID])
+Avg Cost per Visit = DIVIDE([Total Revenue], [Total Visits])
